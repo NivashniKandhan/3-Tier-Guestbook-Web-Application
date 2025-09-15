@@ -14,7 +14,7 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// API endpoint to get all messages
+
 app.get('/messages', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM messages ORDER BY created_at DESC');
