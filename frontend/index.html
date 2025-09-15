@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-agpl-3.0">
+    <title>GCP Guestbook</title>
+    <style>
+        body { font-family: sans-serif; container: centered; max-width: 600px; margin: auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        input, textarea { width: 100%; padding: 8px; }
+        .message { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Cloud Guestbook</h1>
+    <form id="guestbook-form">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" required>
+        </div>
+        <div class="form-group">
+            <label for="message">Message:</label>
+            <textarea id="message" rows="3" required></textarea>
+        </div>
+        <button type="submit">Sign</button>
+    </form>
+
+    <h2>Messages</h2>
+    <div id="messages-container"></div>
+
+    <script>
+        const apiUrl = '/api'; // Nginx will proxy this to our backend
+
+        // Fetch and display messages
+        async function fetchMessages() {
+            const response = await fetch(`${apiUrl}/messages`);
+            const messages = await response.json();
+            const container = document.getElementById('messages-container');
+            container.innerHTML = '';
+            messages.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message';
+                msgDiv.innerHTML = `<strong>${msg.name}</strong><p>${msg.message}</p><small>${new Date(msg.created_at).toLocaleString()}</small>`;
+                container.appendChild(msgDiv);
+            });
+        }
+
+        // Handle form submission
+        document.getElementById('guestbook-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const message = document.getElementById('message').value;
+            await fetch(`${apiUrl}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, message })
+            });
+            document.getElementById('guestbook-form').reset();
+            fetchMessages();
+        });
+
+        // Initial fetch
+        fetchMessages();
+    </script>
+</body>
+</html>
